@@ -19,7 +19,7 @@
       <div class="com-md-6 offset-md-3">
         <input type="text" name="" value="" class="form-control my-5" placeholder="Amount" v-model="amount">
         <div class="text-center">
-          <button type="button" name="button" class="btn btn-block btn-primary" @click="convertCurrency()" :disabled="disable">Convert</button>
+          <button type="button" name="button" class="btn btn-block btn-primary" @click="convertCurrency()" :disabled="disable">{{ loading ? 'Converting..' : 'Convert'}}</button>
         </div>
       </div>
     </div>
@@ -42,7 +42,8 @@ export default {
       amount:0,
       from :'EUR',
       to:'USD',
-      result: 0
+      result: 0,
+      loading: false
     }
   },
   methods:{
@@ -60,8 +61,10 @@ export default {
     },
     convertCurrency(){
       const key = `${this.from}_${this.to}`;
+      this.loading = true;
       axios.get(`https://free.currencyconverterapi.com/api/v6/convert?q=${key}`)
         .then(response => {
+          this.loading = false;
           this.result = response.data.results[key].val
         })
     }
@@ -74,7 +77,15 @@ export default {
       return (Number(this.amount) * this.result).toFixed(3);
     },
     disable(){
-      return this.amount === 0 || this.amount === '';
+      return this.amount === 0 || this.amount === '' || this.loading;
+    }
+  },
+  watch:{
+    from(){
+      this.result = 0
+    },
+    to(){
+      this.result = 0
     }
   }
 }
